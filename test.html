@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>IDB Test</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+</head>
+<body>
+<h1 style="font-family:sans-serif">Vanilla idb.js test</h1>
+
+<script src="/idb.js"></script>
+<script>
+    (async () => {
+        console.log('page loaded')
+        idb.setExchangeRates({ USD:1, GBP:2, EURO:0.7, ILS:3.4 })
+        const db = await idb.openCostsDB('costsdb', 1)
+        await db.addCost({ sum: 200, currency: 'USD', category: 'FOOD', description: 'pizza' })
+        const now = new Date()
+        const rep = await db.getReport(now.getFullYear(), now.getMonth()+1, 'USD')
+        console.log('report:', rep)
+        document.body.insertAdjacentHTML('beforeend', `<pre>${JSON.stringify(rep, null, 2)}</pre>`)
+    })().catch(err => {
+        console.error('TEST ERROR:', err)
+        document.body.insertAdjacentHTML('beforeend', `<p style="color:red">Error: ${err}</p>`)
+    })
+</script>
+</body>
+</html>
