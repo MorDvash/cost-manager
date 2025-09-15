@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   Box, Container, Typography, TextField, MenuItem, Button,
   Paper, Divider, Chip, Table, TableHead, TableRow, TableCell, TableBody,
@@ -9,7 +9,6 @@ import { SUPPORTED_CURRENCIES } from '../utils/constants'
 import { getReport } from '../db/idb'
 import QuickNav from '../components/QuickNav'
 
-// Options for filters (years & months)
 const YEARS = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i)
 const MONTHS = [
   { value: 1, label: 'January' },  { value: 2, label: 'February' },
@@ -23,24 +22,19 @@ const MONTHS = [
 export default function Reports() {
   const now = useMemo(() => new Date(), [])
 
-  // Filters state (top controls)
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [currency, setCurrency] = useState('USD')
 
-  // Report data + the currency that the *last generated* report used
   const [rows, setRows] = useState([])
   const [total, setTotal] = useState(0)
-  const [reportCurrency, setReportCurrency] = useState('USD') // stays until Generate runs again
+  const [reportCurrency, setReportCurrency] = useState('USD')
 
-  // UX state
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Number formatter
   const fmt = (v) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(Number(v || 0))
 
-  // Build report from IndexedDB using current filters
   async function handleGenerate() {
     if (!Number.isFinite(year) || !Number.isFinite(month)) {
       setError('Please choose Year and Month from the lists.')
@@ -51,7 +45,7 @@ export default function Reports() {
       const rep = await getReport(year, month, currency)
       setRows(rep.costs || [])
       setTotal(rep.total?.total || 0)
-      setReportCurrency(currency) // lock display to the currency used for this dataset
+      setReportCurrency(currency)
     } catch (e) {
       setError(e?.message || 'Failed to create report')
       setRows([]); setTotal(0)
@@ -62,7 +56,12 @@ export default function Reports() {
 
   const hasData = rows && rows.length > 0
 
-  // Dark theme TextField overrides for readability
+  useEffect(() => {
+    if (hasData && currency !== reportCurrency) {
+      handleGenerate()
+    }
+  }, [currency])
+
   const tfSx = {
     '& .MuiInputBase-input': { color: 'white' },
     '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.8)' },

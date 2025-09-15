@@ -7,10 +7,8 @@ import CloudDownloadIcon from '@mui/icons-material/CloudDownload'
 import SaveIcon from '@mui/icons-material/Save'
 import QuickNav from '../components/QuickNav'
 
-// Try to import optional helpers from idb (if they exist in your project)
 import * as idb from '../db/idb'
 
-// Fallback helpers: use idb if available, else localStorage
 async function loadRatesUrl() {
   if (typeof idb.getRatesUrl === 'function') return idb.getRatesUrl()
   if (typeof idb.getSetting === 'function')   return idb.getSetting('ratesUrl')
@@ -22,7 +20,6 @@ async function saveRatesUrl(url) {
   localStorage.setItem('ratesUrl', url)
 }
 
-// Simple number formatter
 const fmt = (v) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(Number(v || 0))
 
 export default function Settings() {
@@ -33,7 +30,6 @@ export default function Settings() {
   const [error, setError] = useState('')
   const [okMsg, setOkMsg] = useState('')
 
-  // Load current URL on mount
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -45,7 +41,6 @@ export default function Settings() {
     return () => { mounted = false }
   }, [])
 
-  // Test-fetch the URL and show parsed rates
   async function handleTest() {
     setError(''); setOkMsg(''); setRates(null); setTesting(true)
     try {
@@ -57,7 +52,6 @@ export default function Settings() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
 
-      // Accept either flat JSON or provider JSON with { rates, base_code }
       let raw = null
       let baseCode = 'USD'
 
@@ -68,13 +62,11 @@ export default function Settings() {
         raw = data
       }
 
-      // Pull values (support EUR/EURO keys)
       let USDv = Number(raw.USD)
       let GBPv = Number(raw.GBP)
       let EURv = Number(raw.EUR ?? raw.EURO)
       let ILSv = Number(raw.ILS)
 
-      // Normalize to "per 1 USD" if base is not USD
       if (String(baseCode).toUpperCase() !== 'USD') {
         if (!Number.isFinite(USDv) || USDv === 0) {
           throw new Error('Source JSON missing valid USD rate for normalization.')
@@ -85,7 +77,6 @@ export default function Settings() {
         USDv = 1
       }
 
-      // Validate numbers
       const allOk = [USDv, GBPv, EURv, ILSv].every(n => Number.isFinite(n))
       if (!allOk) throw new Error('JSON must include USD, GBP, EUR(EURO), ILS as numeric values.')
 
@@ -98,7 +89,6 @@ export default function Settings() {
     }
   }
 
-  // Save URL into storage
   async function handleSave() {
     setError(''); setOkMsg(''); setSaving(true)
     try {
@@ -114,7 +104,6 @@ export default function Settings() {
     }
   }
 
-  // Dark TextField styling
   const tfSx = {
     '& .MuiInputBase-input': { color: 'white' },
     '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.8)' },

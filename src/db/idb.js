@@ -1,4 +1,4 @@
-let ratesProvider = null; //  פונקציה שתספק שערים {USD, ILS, GBP, EURO}
+let ratesProvider = null;
 
 export function setRatesProvider(fn) {
   ratesProvider = fn;
@@ -23,7 +23,6 @@ export async function openCostsDB(name = "costsdb", version = 1) {
   });
 }
 
-// שמירת/קריאת הגדרה
 export async function saveSetting(key, value) {
   const db = await openCostsDB();
   return new Promise((resolve, reject) => {
@@ -62,7 +61,7 @@ export async function addCost(cost) {
 
 function convert(sum, from, to, rates) {
   if (!rates || !rates[from] || !rates[to]) return Number(sum);
-  const usd = Number(sum) / rates[from];  // יחס מהמסמך: {USD:1, GBP:1.8, EURO:0.7, ILS:3.4}
+  const usd = Number(sum) / rates[from];
   return usd * rates[to];
 }
 

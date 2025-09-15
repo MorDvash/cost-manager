@@ -5,7 +5,6 @@ import { Link as RouterLink, useLocation } from 'react-router-dom'
 export default function QuickNav() {
     const { pathname } = useLocation()
 
-    // check which tab is active now
     const is = (p) => pathname === p
 
     const common = { sx: { color: 'white' } }

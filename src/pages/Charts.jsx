@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   Box, Container, Typography, Paper, Tabs, Tab, Grid, Stack,
   TextField, MenuItem, Button, Divider
@@ -13,7 +13,6 @@ import { SUPPORTED_CURRENCIES } from '../utils/constants'
 import { getReport } from '../db/idb'
 import QuickNav from '../components/QuickNav'
 
-// Options for filters
 const YEARS = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i)
 const MONTHS = [
   { value: 1, label: 'January' },  { value: 2, label: 'February' },
@@ -31,30 +30,24 @@ const COLORS = [
 
 export default function Charts() {
   const now = useMemo(() => new Date(), [])
-  const [tab, setTab] = useState(0) // 0 = Pie, 1 = Bar
+  const [tab, setTab] = useState(0)
 
-  // Pie controls
   const [pieYear, setPieYear] = useState(now.getFullYear())
   const [pieMonth, setPieMonth] = useState(now.getMonth() + 1)
   const [pieCurrency, setPieCurrency] = useState('USD')
 
-  // Bar controls
   const [barYear, setBarYear] = useState(now.getFullYear())
   const [barCurrency, setBarCurrency] = useState('USD')
 
-  // Data
-  const [pieData, setPieData] = useState([]) // [{name, value}]
-  const [barData, setBarData] = useState([]) // [{month, total}]
+  const [pieData, setPieData] = useState([])
+  const [barData, setBarData] = useState([])
 
-  // Display currencies used for the *last generated* charts
   const [pieReportCurrency, setPieReportCurrency] = useState('USD')
   const [barReportCurrency, setBarReportCurrency] = useState('USD')
 
-  // UX
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Build pie data by categories for selected month/year
   async function handleGeneratePie() {
     try {
       setError(''); setLoading(true)
@@ -68,7 +61,7 @@ export default function Charts() {
         name, value: Number(value.toFixed(2))
       }))
       setPieData(arr)
-      setPieReportCurrency(pieCurrency) // lock label to generated currency
+      setPieReportCurrency(pieCurrency)
     } catch (e) {
       setError(e?.message || 'Failed to generate pie chart')
       setPieData([])
@@ -77,7 +70,6 @@ export default function Charts() {
     }
   }
 
-  // Build yearly totals (12 months)
   async function handleGenerateBar() {
     try {
       setError(''); setLoading(true)
@@ -90,7 +82,7 @@ export default function Charts() {
         })
       }
       setBarData(results)
-      setBarReportCurrency(barCurrency) // lock label to generated currency
+      setBarReportCurrency(barCurrency)
     } catch (e) {
       setError(e?.message || 'Failed to generate bar chart')
       setBarData([])
@@ -102,7 +94,18 @@ export default function Charts() {
   const hasPieData = pieData.length > 0
   const hasBarData = barData.some(d => Number(d.total) > 0)
 
-  // Dark theme TextField overrides for readability
+  useEffect(() => {
+    if (hasPieData && pieCurrency !== pieReportCurrency) {
+      handleGeneratePie()
+    }
+  }, [pieCurrency])
+
+  useEffect(() => {
+    if (hasBarData && barCurrency !== barReportCurrency) {
+      handleGenerateBar()
+    }
+  }, [barCurrency])
+
   const tfSx = {
     '& .MuiInputBase-input': { color: 'white' },
     '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.8)' },

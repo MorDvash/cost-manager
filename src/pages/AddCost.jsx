@@ -7,9 +7,8 @@ import AddCircleIcon from '@mui/icons-material/AddCircle'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import QuickNav from '../components/QuickNav'
 import { SUPPORTED_CURRENCIES } from '../utils/constants'
-import { addCost } from '../db/idb' // React version of idb.js
+import { addCost } from '../db/idb'
 
-// Predefined categories for the dropdown
 const CATEGORIES = [
     'Food', 'Transport', 'Housing', 'Utilities',
     'Entertainment', 'Health', 'Education',
@@ -21,21 +20,18 @@ const CATEGORIES = [
  * Required: sum, currency, category, description. Date is set automatically by idb.addCost.
  */
 export default function AddCost() {
-    // Form state
     const [sum, setSum] = useState('')
     const [currency, setCurrency] = useState('USD')
     const [category, setCategory] = useState(CATEGORIES[0])
     const [customCategory, setCustomCategory] = useState('')
     const [description, setDescription] = useState('')
 
-    // UX state
     const [submitting, setSubmitting] = useState(false)
     const [success, setSuccess] = useState(false)
     const [error, setError] = useState('')
 
     const isCustom = category === 'Other (custom)'
 
-    // Minimal client validation
     function validate() {
         if (!sum || Number(sum) <= 0 || !Number.isFinite(Number(sum))) {
             return 'Please enter a valid positive amount.'
@@ -62,7 +58,6 @@ export default function AddCost() {
                 description: description.trim(),
             })
             setSuccess(true)
-            // Reset form
             setSum('')
             setCurrency('USD')
             setCategory(CATEGORIES[0])
@@ -84,7 +79,6 @@ export default function AddCost() {
         setDescription('')
     }
 
-    // Dark TextField styling for readability
     const tfSx = {
         '& .MuiInputBase-input': { color: 'white' },
         '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.8)' },

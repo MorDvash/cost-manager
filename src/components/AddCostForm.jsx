@@ -31,7 +31,6 @@ export default function AddCostForm() {
     e.preventDefault()
     setError('')
 
-    // ולידציה בסיסית לפי הדרישות
     const value = Number(sum)
     if (!Number.isFinite(value) || value <= 0) {
       setError('Amount (sum) must be a positive number')
