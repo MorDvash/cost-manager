@@ -6,10 +6,8 @@ let cachedAt = 0;
 
 export async function getExchangeRates() {
     const now = Date.now();
-    // Return cached data if less than 5 minutes old
-    if (cached && now - cachedAt < 5 * 60 * 1000) return cached;
 
-    const url = (await getSetting('ratesUrl')) || 'https://abelski.com/temp/data.php';
+    const url = (await getSetting('ratesUrl')) || 'https://open.er-api.com/v6/latest/USD';
 
     const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch exchange rates');

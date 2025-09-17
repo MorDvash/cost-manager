@@ -35,13 +35,10 @@ export async function saveSetting(key, value) {
   });
 }
 export async function getSetting(key) {
-  const db = await openCostsDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction("settings", "readonly");
-    const req = tx.objectStore("settings").get(key);
-    req.onsuccess = () => resolve(req.result?.value);
-    req.onerror = () => reject(req.error);
-  });
+    return new Promise((resolve) => {
+        const value = localStorage.getItem(key);
+        resolve(value);
+    });
 }
 
 export async function addCost(cost) {
