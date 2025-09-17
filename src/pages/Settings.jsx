@@ -1,106 +1,111 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 import {
   Box, Container, Typography, Paper, TextField, Button, Stack,
   Divider, Chip, Grid
-} from '@mui/material'
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload'
-import SaveIcon from '@mui/icons-material/Save'
-import QuickNav from '../components/QuickNav'
+} from '@mui/material';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import SaveIcon from '@mui/icons-material/Save';
+import QuickNav from '../components/QuickNav';
 
-import * as idb from '../db/idb'
+import * as idb from '../db/idb';
 
+// Fallback chain for loading rates URL from different storage methods
 async function loadRatesUrl() {
-  if (typeof idb.getRatesUrl === 'function') return idb.getRatesUrl()
-  if (typeof idb.getSetting === 'function')   return idb.getSetting('ratesUrl')
-  return localStorage.getItem('ratesUrl') || ''
+  if (typeof idb.getRatesUrl === 'function') return idb.getRatesUrl();
+  if (typeof idb.getSetting === 'function')   return idb.getSetting('ratesUrl');
+  return localStorage.getItem('ratesUrl') || '';
 }
+// Fallback chain for saving rates URL to different storage methods
 async function saveRatesUrl(url) {
-  if (typeof idb.setRatesUrl === 'function') return idb.setRatesUrl(url)
-  if (typeof idb.setSetting === 'function')   return idb.setSetting('ratesUrl', url)
-  localStorage.setItem('ratesUrl', url)
+  if (typeof idb.setRatesUrl === 'function') return idb.setRatesUrl(url);
+  if (typeof idb.setSetting === 'function')   return idb.setSetting('ratesUrl', url);
+  localStorage.setItem('ratesUrl', url);
 }
 
-const fmt = (v) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(Number(v || 0))
+const fmt = (v) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(Number(v || 0));
 
 export default function Settings() {
-  const [url, setUrl] = useState('')
-  const [rates, setRates] = useState(null)
-  const [testing, setTesting] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-  const [okMsg, setOkMsg] = useState('')
+  const [url, setUrl] = useState('');
+  const [rates, setRates] = useState(null);
+  const [testing, setTesting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [okMsg, setOkMsg] = useState('');
 
   useEffect(() => {
-    let mounted = true
-    ;(async () => {
+    let mounted = true;
+    (async () => {
       try {
-        const existing = await loadRatesUrl()
-        if (mounted && existing) setUrl(String(existing))
+        const existing = await loadRatesUrl();
+        if (mounted && existing) setUrl(String(existing));
       } catch { /* ignore */ }
-    })()
-    return () => { mounted = false }
-  }, [])
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   async function handleTest() {
-    setError(''); setOkMsg(''); setRates(null); setTesting(true)
+    setError(''); setOkMsg(''); setRates(null); setTesting(true);
     try {
       if (!url || !/^https?:\/\//i.test(url)) {
-        throw new Error('Please enter a valid URL (http/https).')
+        throw new Error('Please enter a valid URL (http/https).');
       }
 
-      const res = await fetch(url, { mode: 'cors' })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
 
-      let raw = null
-      let baseCode = 'USD'
+      let raw = null;
+      let baseCode = 'USD';
 
+      // Handle nested format: { base: "USD", rates: { ... } }
       if (data && typeof data === 'object' && data.rates && typeof data.rates === 'object') {
-        raw = data.rates
-        baseCode = data.base_code || data.base || baseCode
+        raw = data.rates;
+        baseCode = data.base_code || data.base || baseCode;
       } else {
-        raw = data
+        // Handle flat format: { USD: 1, GBP: 0.8, ... }
+        raw = data;
       }
 
-      let USDv = Number(raw.USD)
-      let GBPv = Number(raw.GBP)
-      let EURv = Number(raw.EUR ?? raw.EURO)
-      let ILSv = Number(raw.ILS)
+      let USDv = Number(raw.USD);
+      let GBPv = Number(raw.GBP);
+      let EURv = Number(raw.EUR ?? raw.EURO);
+      let ILSv = Number(raw.ILS);
 
+      // Convert to USD base if needed
       if (String(baseCode).toUpperCase() !== 'USD') {
         if (!Number.isFinite(USDv) || USDv === 0) {
-          throw new Error('Source JSON missing valid USD rate for normalization.')
+          throw new Error('Source JSON missing valid USD rate for normalization.');
         }
-        GBPv = GBPv / USDv
-        EURv = EURv / USDv
-        ILSv = ILSv / USDv
-        USDv = 1
+        GBPv = GBPv / USDv;
+        EURv = EURv / USDv;
+        ILSv = ILSv / USDv;
+        USDv = 1;
       }
 
-      const allOk = [USDv, GBPv, EURv, ILSv].every(n => Number.isFinite(n))
-      if (!allOk) throw new Error('JSON must include USD, GBP, EUR(EURO), ILS as numeric values.')
+      const allOk = [USDv, GBPv, EURv, ILSv].every(n => Number.isFinite(n));
+      if (!allOk) throw new Error('JSON must include USD, GBP, EUR(EURO), ILS as numeric values.');
 
-      setRates({ USD: USDv, GBP: GBPv, EURO: EURv, ILS: ILSv })
-      setOkMsg('Test fetch succeeded.')
+      setRates({ USD: USDv, GBP: GBPv, EURO: EURv, ILS: ILSv });
+      setOkMsg('Test fetch succeeded.');
     } catch (e) {
-      setError(e?.message || 'Failed to fetch rates.')
+      setError(e?.message || 'Failed to fetch rates.');
     } finally {
-      setTesting(false)
+      setTesting(false);
     }
   }
 
   async function handleSave() {
-    setError(''); setOkMsg(''); setSaving(true)
+    setError(''); setOkMsg(''); setSaving(true);
     try {
       if (!url || !/^https?:\/\//i.test(url)) {
-        throw new Error('Please enter a valid URL (http/https).')
+        throw new Error('Please enter a valid URL (http/https).');
       }
-      await saveRatesUrl(url)
-      setOkMsg('URL saved successfully.')
+      await saveRatesUrl(url);
+      setOkMsg('URL saved successfully.');
     } catch (e) {
-      setError(e?.message || 'Failed to save URL.')
+      setError(e?.message || 'Failed to save URL.');
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
@@ -230,5 +235,5 @@ export default function Settings() {
           </Paper>
         </Container>
       </Box>
-  )
+  );
 }

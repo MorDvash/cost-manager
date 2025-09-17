@@ -1,82 +1,78 @@
-import { useState } from 'react'
+import { useState } from 'react';
 import {
     Box, Container, Typography, Paper, Grid, TextField, MenuItem,
     Button, Stack, Snackbar, Alert, Divider
-} from '@mui/material'
-import AddCircleIcon from '@mui/icons-material/AddCircle'
-import RestartAltIcon from '@mui/icons-material/RestartAlt'
-import QuickNav from '../components/QuickNav'
-import { SUPPORTED_CURRENCIES } from '../utils/constants'
-import { addCost } from '../db/idb'
+} from '@mui/material';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import QuickNav from '../components/QuickNav';
+import { SUPPORTED_CURRENCIES } from '../utils/constants';
+import { addCost } from '../db/idb';
 
 const CATEGORIES = [
     'Food', 'Transport', 'Housing', 'Utilities',
     'Entertainment', 'Health', 'Education',
     'Shopping', 'Travel', 'Other (custom)'
-]
-
-/**
- * AddCost page — add a new cost item into IndexedDB.
- * Required: sum, currency, category, description. Date is set automatically by idb.addCost.
- */
+];
 export default function AddCost() {
-    const [sum, setSum] = useState('')
-    const [currency, setCurrency] = useState('USD')
-    const [category, setCategory] = useState(CATEGORIES[0])
-    const [customCategory, setCustomCategory] = useState('')
-    const [description, setDescription] = useState('')
+    const [sum, setSum] = useState('');
+    const [currency, setCurrency] = useState('USD');
+    const [category, setCategory] = useState(CATEGORIES[0]);
+    const [customCategory, setCustomCategory] = useState('');
+    const [description, setDescription] = useState('');
 
-    const [submitting, setSubmitting] = useState(false)
-    const [success, setSuccess] = useState(false)
-    const [error, setError] = useState('')
+    const [submitting, setSubmitting] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState('');
 
-    const isCustom = category === 'Other (custom)'
+    const isCustom = category === 'Other (custom)';
 
     function validate() {
         if (!sum || Number(sum) <= 0 || !Number.isFinite(Number(sum))) {
-            return 'Please enter a valid positive amount.'
+            return 'Please enter a valid positive amount.';
         }
-        if (!currency) return 'Please choose a currency.'
-        if (isCustom && !customCategory.trim()) return 'Please enter a custom category.'
-        if (!description.trim()) return 'Please enter a description.'
-        return ''
+        if (!currency) return 'Please choose a currency.';
+        // If user selected custom category, they must provide a custom name
+        if (isCustom && !customCategory.trim()) return 'Please enter a custom category.';
+        if (!description.trim()) return 'Please enter a description.';
+        return '';
     }
 
     async function handleSubmit(e) {
-        e.preventDefault()
-        setError('')
-        const err = validate()
-        if (err) { setError(err); return }
+        e.preventDefault();
+        setError('');
+        const err = validate();
+        if (err) { setError(err); return; }
 
         try {
-            setSubmitting(true)
-            const finalCategory = isCustom ? customCategory.trim() : category
+            setSubmitting(true);
+            const finalCategory = isCustom ? customCategory.trim() : category;
             await addCost({
                 sum: Number(sum),
                 currency,
                 category: finalCategory,
                 description: description.trim(),
-            })
-            setSuccess(true)
-            setSum('')
-            setCurrency('USD')
-            setCategory(CATEGORIES[0])
-            setCustomCategory('')
-            setDescription('')
+            });
+            setSuccess(true);
+            setSum('');
+            setCurrency('USD');
+            setCategory(CATEGORIES[0]);
+            setCustomCategory('');
+            setDescription('');
         } catch (ex) {
-            setError(ex?.message || 'Failed to add cost.')
+            setError(ex?.message || 'Failed to add cost.');
         } finally {
-            setSubmitting(false)
+            setSubmitting(false);
         }
     }
 
     function handleReset() {
-        setError('')
-        setSum('')
-        setCurrency('USD')
-        setCategory(CATEGORIES[0])
-        setCustomCategory('')
-        setDescription('')
+        setError('');
+        setSum('');
+        setCurrency('USD');
+        setCategory(CATEGORIES[0]);
+        setCustomCategory('');
+        setDescription('');
     }
 
     const tfSx = {
@@ -227,5 +223,5 @@ export default function AddCost() {
                 </Snackbar>
             </Container>
         </Box>
-    )
+    );
 }

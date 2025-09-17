@@ -1,15 +1,15 @@
-import { Box } from '@mui/material'
-import { Routes, Route } from 'react-router-dom'
+import { Box } from '@mui/material';
+import { Routes, Route } from 'react-router-dom';
 
-import Home from './pages/Home'
-import AddCost from './pages/AddCost'
-import Reports from './pages/Reports'
-import Charts from './pages/Charts'
-import Settings from './pages/Settings'
-import { setRatesProvider } from './db/idb'
-import { getExchangeRates } from './utils/rates'
+import Home from './pages/Home';
+import AddCost from './pages/AddCost';
+import Reports from './pages/Reports';
+import Charts from './pages/Charts';
+import Settings from './pages/Settings';
+import { setRatesProvider } from './db/idb';
+import { getExchangeRates } from './utils/rates';
 
-setRatesProvider(() => getExchangeRates())
+setRatesProvider(() => getExchangeRates());
 
 export default function App() {
     return (
@@ -22,5 +22,5 @@ export default function App() {
                 <Route path="/settings" element={<Settings />} />
             </Routes>
         </Box>
-    )
+    );
 }

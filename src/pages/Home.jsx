@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link as RouterLink } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import {
     Box,
     Container,
@@ -11,31 +11,31 @@ import {
     Stack,
     Chip,
     Divider,
-} from '@mui/material'
-import AddCircleIcon from '@mui/icons-material/AddCircle'
-import AssessmentIcon from '@mui/icons-material/Assessment'
-import DonutLargeIcon from '@mui/icons-material/DonutLarge'
-import SettingsIcon from '@mui/icons-material/Settings'
-import { getExchangeRates } from '../utils/rates'
+} from '@mui/material';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import DonutLargeIcon from '@mui/icons-material/DonutLarge';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { getExchangeRates } from '../utils/rates';
 
-const CURRENCIES = ['USD','GBP','EURO','ILS']
+const CURRENCIES = ['USD','GBP','EURO','ILS'];
 
 export default function Home() {
-    const [rates, setRates] = useState(null)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
+    const [rates, setRates] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const now = useMemo(() => new Date(), [])
+    const now = useMemo(() => new Date(), []);
 
     useEffect(() => {
-        let mounted = true
-        setLoading(true)
+        let mounted = true; // Prevent state updates after component unmounts
+        setLoading(true);
         getExchangeRates()
-            .then((r) => { if (mounted) setRates(r) })
-            .catch((e) => { if (mounted) setError(e?.message || 'Failed to load rates') })
-            .finally(() => { if (mounted) setLoading(false) })
-        return () => { mounted = false }
-    }, [])
+            .then((r) => { if (mounted) setRates(r); })
+            .catch((e) => { if (mounted) setError(e?.message || 'Failed to load rates'); })
+            .finally(() => { if (mounted) setLoading(false); });
+        return () => { mounted = false; };
+    }, []);
 
     return (
         <Box sx={{
@@ -138,5 +138,5 @@ export default function Home() {
                 </Stack>
             </Container>
         </Box>
-    )
+    );
 }

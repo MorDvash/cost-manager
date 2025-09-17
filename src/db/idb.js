@@ -1,3 +1,4 @@
+// Provider function for getting exchange rates
 let ratesProvider = null;
 
 export function setRatesProvider(fn) {
@@ -8,6 +9,7 @@ export async function openCostsDB(name = "costsdb", version = 1) {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(name, version);
 
+    // Create object stores on first run or version upgrade
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
       if (!db.objectStoreNames.contains("costs")) {
@@ -48,6 +50,7 @@ export async function addCost(cost) {
     const tx = db.transaction("costs", "readwrite");
     const store = tx.objectStore("costs");
 
+    // Add timestamp when saving
     const newCost = {
       ...cost,
       date: new Date().toISOString(),
@@ -59,6 +62,7 @@ export async function addCost(cost) {
   });
 }
 
+// Currency conversion: from -> USD -> to
 function convert(sum, from, to, rates) {
   if (!rates || !rates[from] || !rates[to]) return Number(sum);
   const usd = Number(sum) / rates[from];
@@ -77,11 +81,13 @@ export async function getReport(year, month, currency) {
     req.onsuccess = () => {
       const all = req.result || [];
 
+      // Filter costs by year and month
       const filtered = all.filter((c) => {
         const d = new Date(c.date);
         return d.getFullYear() === year && d.getMonth() + 1 === month;
       });
 
+      // Convert all amounts to target currency
       const costsOut = filtered.map((c) => ({
         sum: Number(convert(c.sum, c.currency, currency, rates).toFixed(2)),
         currency,

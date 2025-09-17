@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from 'react';
 import {
   TextField,
   MenuItem,
@@ -7,65 +7,65 @@ import {
   Alert,
   Snackbar,
   InputAdornment
-} from '@mui/material'
-import { SUPPORTED_CURRENCIES, CURRENCY_SYMBOL, DEFAULT_CATEGORIES } from '../utils/constants'
-import { addCost } from '../db/idb'
+} from '@mui/material';
+import { SUPPORTED_CURRENCIES, CURRENCY_SYMBOL, DEFAULT_CATEGORIES } from '../utils/constants';
+import { addCost } from '../db/idb';
 
 export default function AddCostForm() {
-  const [sum, setSum] = useState('')
-  const [currency, setCurrency] = useState('USD')
-  const [category, setCategory] = useState(DEFAULT_CATEGORIES[0])
-  const [description, setDescription] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [snackOpen, setSnackOpen] = useState(false)
+  const [sum, setSum] = useState('');
+  const [currency, setCurrency] = useState('USD');
+  const [category, setCategory] = useState(DEFAULT_CATEGORIES[0]);
+  const [description, setDescription] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [snackOpen, setSnackOpen] = useState(false);
 
   const resetForm = () => {
-    setSum('')
-    setCurrency('USD')
-    setCategory(DEFAULT_CATEGORIES[0])
-    setDescription('')
-  }
+    setSum('');
+    setCurrency('USD');
+    setCategory(DEFAULT_CATEGORIES[0]);
+    setDescription('');
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError('');
 
-    const value = Number(sum)
+    const value = Number(sum);
     if (!Number.isFinite(value) || value <= 0) {
-      setError('Amount (sum) must be a positive number')
-      return
+      setError('Amount (sum) must be a positive number');
+      return;
     }
     if (!currency) {
-      setError('Please select a currency')
-      return
+      setError('Please select a currency');
+      return;
     }
     if (!category.trim()) {
-      setError('Category is required')
-      return
+      setError('Category is required');
+      return;
     }
     if (!description.trim()) {
-      setError('Description is required')
-      return
+      setError('Description is required');
+      return;
     }
 
     try {
-      setLoading(true)
+      setLoading(true);
       await addCost({
         sum: value,
         currency,
         category: category.trim(),
         description: description.trim()
-      })
-      setSnackOpen(true)
-      resetForm()
+      });
+      setSnackOpen(true);
+      resetForm();
     } catch (err) {
-      console.error(err)
-      setError(err?.message || 'Failed to save cost item')
+      console.error(err);
+      setError(err?.message || 'Failed to save cost item');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <>
@@ -143,5 +143,5 @@ export default function AddCostForm() {
         </Alert>
       </Snackbar>
     </>
-  )
+  );
 }

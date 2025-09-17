@@ -1,15 +1,15 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import { ThemeProvider, createTheme } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
-import { BrowserRouter } from 'react-router-dom'
-import { setRatesProvider } from './db/idb'
-import { getExchangeRates } from './utils/rates'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.jsx';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { BrowserRouter } from 'react-router-dom';
+import { setRatesProvider } from './db/idb';
+import { getExchangeRates } from './utils/rates';
 
-setRatesProvider(() => getExchangeRates())
+setRatesProvider(() => getExchangeRates());
 
-const theme = createTheme()
+const theme = createTheme();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -20,4 +20,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       </BrowserRouter>
     </ThemeProvider>
   </React.StrictMode>
-)
+);

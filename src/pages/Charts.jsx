@@ -1,19 +1,19 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react';
 import {
   Box, Container, Typography, Paper, Tabs, Tab, Grid, Stack,
   TextField, MenuItem, Button, Divider
-} from '@mui/material'
+} from '@mui/material';
 import {
   ResponsiveContainer, PieChart, Pie, Tooltip, Legend, Cell,
   BarChart, Bar, XAxis, YAxis, CartesianGrid
-} from 'recharts'
-import DonutLargeIcon from '@mui/icons-material/DonutLarge'
-import AssessmentIcon from '@mui/icons-material/Assessment'
-import { SUPPORTED_CURRENCIES } from '../utils/constants'
-import { getReport } from '../db/idb'
-import QuickNav from '../components/QuickNav'
+} from 'recharts';
+import DonutLargeIcon from '@mui/icons-material/DonutLarge';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import { SUPPORTED_CURRENCIES } from '../utils/constants';
+import { getReport } from '../db/idb';
+import QuickNav from '../components/QuickNav';
 
-const YEARS = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i)
+const YEARS = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i);
 const MONTHS = [
   { value: 1, label: 'January' },  { value: 2, label: 'February' },
   { value: 3, label: 'March' },    { value: 4, label: 'April' },
@@ -21,90 +21,98 @@ const MONTHS = [
   { value: 7, label: 'July' },     { value: 8, label: 'August' },
   { value: 9, label: 'September' },{ value: 10, label: 'October' },
   { value: 11, label: 'November' },{ value: 12, label: 'December' }
-]
+];
 
 const COLORS = [
   '#1106ed', '#82ca9d', '#ffc658', '#ff7f50', '#8dd1e1',
   '#a4de6c', '#d0ed57', '#a28df0', '#f6a5c0', '#ffd1a1'
-]
+];
 
 export default function Charts() {
-  const now = useMemo(() => new Date(), [])
-  const [tab, setTab] = useState(0)
+  const now = useMemo(() => new Date(), []);
+  const [tab, setTab] = useState(0);
 
-  const [pieYear, setPieYear] = useState(now.getFullYear())
-  const [pieMonth, setPieMonth] = useState(now.getMonth() + 1)
-  const [pieCurrency, setPieCurrency] = useState('USD')
+  const [pieYear, setPieYear] = useState(now.getFullYear());
+  const [pieMonth, setPieMonth] = useState(now.getMonth() + 1);
+  const [pieCurrency, setPieCurrency] = useState('USD');
 
-  const [barYear, setBarYear] = useState(now.getFullYear())
-  const [barCurrency, setBarCurrency] = useState('USD')
+  const [barYear, setBarYear] = useState(now.getFullYear());
+  const [barCurrency, setBarCurrency] = useState('USD');
 
-  const [pieData, setPieData] = useState([])
-  const [barData, setBarData] = useState([])
+  const [pieData, setPieData] = useState([]);
+  const [barData, setBarData] = useState([]);
 
-  const [pieReportCurrency, setPieReportCurrency] = useState('USD')
-  const [barReportCurrency, setBarReportCurrency] = useState('USD')
+  const [pieReportCurrency, setPieReportCurrency] = useState('USD');
+  const [barReportCurrency, setBarReportCurrency] = useState('USD');
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   async function handleGeneratePie() {
     try {
-      setError(''); setLoading(true)
-      const rep = await getReport(pieYear, pieMonth, pieCurrency)
-      const map = new Map()
+      setError(''); setLoading(true);
+      const rep = await getReport(pieYear, pieMonth, pieCurrency);
+      
+      // Group costs by category and sum amounts
+      const map = new Map();
       for (const c of rep.costs) {
-        const key = c.category || 'Other'
-        map.set(key, (map.get(key) || 0) + Number(c.sum || 0))
+        const key = c.category || 'Other';
+        map.set(key, (map.get(key) || 0) + Number(c.sum || 0));
       }
+      
+      // Transform to chart data format
       const arr = Array.from(map.entries()).map(([name, value]) => ({
         name, value: Number(value.toFixed(2))
-      }))
-      setPieData(arr)
-      setPieReportCurrency(pieCurrency)
+      }));
+      setPieData(arr);
+      setPieReportCurrency(pieCurrency);
     } catch (e) {
-      setError(e?.message || 'Failed to generate pie chart')
-      setPieData([])
+      setError(e?.message || 'Failed to generate pie chart');
+      setPieData([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   async function handleGenerateBar() {
     try {
-      setError(''); setLoading(true)
-      const results = []
+      setError(''); setLoading(true);
+      const results = [];
+      
+      // Get totals for all 12 months of the selected year
       for (let m = 1; m <= 12; m++) {
-        const rep = await getReport(barYear, m, barCurrency)
+        const rep = await getReport(barYear, m, barCurrency);
         results.push({
-          month: MONTHS[m - 1].label.slice(0, 3),
+          month: MONTHS[m - 1].label.slice(0, 3), // Abbreviated month name
           total: Number((rep.total?.total || 0).toFixed(2))
-        })
+        });
       }
-      setBarData(results)
-      setBarReportCurrency(barCurrency)
+      setBarData(results);
+      setBarReportCurrency(barCurrency);
     } catch (e) {
-      setError(e?.message || 'Failed to generate bar chart')
-      setBarData([])
+      setError(e?.message || 'Failed to generate bar chart');
+      setBarData([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
-  const hasPieData = pieData.length > 0
-  const hasBarData = barData.some(d => Number(d.total) > 0)
+  const hasPieData = pieData.length > 0;
+  const hasBarData = barData.some(d => Number(d.total) > 0);
 
+  // Regenerate pie chart when currency changes (if data exists)
   useEffect(() => {
     if (hasPieData && pieCurrency !== pieReportCurrency) {
-      handleGeneratePie()
+      handleGeneratePie();
     }
-  }, [pieCurrency])
+  }, [pieCurrency]);
 
+  // Regenerate bar chart when currency changes (if data exists)
   useEffect(() => {
     if (hasBarData && barCurrency !== barReportCurrency) {
-      handleGenerateBar()
+      handleGenerateBar();
     }
-  }, [barCurrency])
+  }, [barCurrency]);
 
   const tfSx = {
     '& .MuiInputBase-input': { color: 'white' },
@@ -294,5 +302,5 @@ export default function Charts() {
           {error && <Typography color="error">{error}</Typography>}
         </Container>
       </Box>
-  )
+  );
 }

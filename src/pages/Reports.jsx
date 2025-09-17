@@ -1,15 +1,15 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react';
 import {
   Box, Container, Typography, TextField, MenuItem, Button,
   Paper, Divider, Chip, Table, TableHead, TableRow, TableCell, TableBody,
   Grid, Stack
-} from '@mui/material'
-import AssessmentIcon from '@mui/icons-material/Assessment'
-import { SUPPORTED_CURRENCIES } from '../utils/constants'
-import { getReport } from '../db/idb'
-import QuickNav from '../components/QuickNav'
+} from '@mui/material';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import { SUPPORTED_CURRENCIES } from '../utils/constants';
+import { getReport } from '../db/idb';
+import QuickNav from '../components/QuickNav';
 
-const YEARS = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i)
+const YEARS = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i);
 const MONTHS = [
   { value: 1, label: 'January' },  { value: 2, label: 'February' },
   { value: 3, label: 'March' },    { value: 4, label: 'April' },
@@ -17,50 +17,51 @@ const MONTHS = [
   { value: 7, label: 'July' },     { value: 8, label: 'August' },
   { value: 9, label: 'September' },{ value: 10, label: 'October' },
   { value: 11, label: 'November' },{ value: 12, label: 'December' }
-]
+];
 
 export default function Reports() {
-  const now = useMemo(() => new Date(), [])
+  const now = useMemo(() => new Date(), []);
 
-  const [year, setYear] = useState(now.getFullYear())
-  const [month, setMonth] = useState(now.getMonth() + 1)
-  const [currency, setCurrency] = useState('USD')
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [currency, setCurrency] = useState('USD');
 
-  const [rows, setRows] = useState([])
-  const [total, setTotal] = useState(0)
-  const [reportCurrency, setReportCurrency] = useState('USD')
+  const [rows, setRows] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [reportCurrency, setReportCurrency] = useState('USD');
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const fmt = (v) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(Number(v || 0))
+  const fmt = (v) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(Number(v || 0));
 
   async function handleGenerate() {
     if (!Number.isFinite(year) || !Number.isFinite(month)) {
-      setError('Please choose Year and Month from the lists.')
-      return
+      setError('Please choose Year and Month from the lists.');
+      return;
     }
     try {
-      setError(''); setLoading(true)
-      const rep = await getReport(year, month, currency)
-      setRows(rep.costs || [])
-      setTotal(rep.total?.total || 0)
-      setReportCurrency(currency)
+      setError(''); setLoading(true);
+      const rep = await getReport(year, month, currency);
+      setRows(rep.costs || []);
+      setTotal(rep.total?.total || 0);
+      setReportCurrency(currency);
     } catch (e) {
-      setError(e?.message || 'Failed to create report')
-      setRows([]); setTotal(0)
+      setError(e?.message || 'Failed to create report');
+      setRows([]); setTotal(0);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
-  const hasData = rows && rows.length > 0
+  const hasData = rows && rows.length > 0;
 
+  // Regenerate report when currency changes to convert existing data
   useEffect(() => {
     if (hasData && currency !== reportCurrency) {
-      handleGenerate()
+      handleGenerate();
     }
-  }, [currency])
+  }, [currency]);
 
   const tfSx = {
     '& .MuiInputBase-input': { color: 'white' },
@@ -190,5 +191,5 @@ export default function Reports() {
           </Paper>
         </Container>
       </Box>
-  )
+  );
 }
